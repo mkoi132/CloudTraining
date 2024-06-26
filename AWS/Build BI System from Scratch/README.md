@@ -148,7 +148,7 @@ Use simple SQL statement to query 10 transactions from the table. </br>
 
 ## <a name="athena-ctas-lambda-function"></a>Combine small files stored in S3 into large files using AWS Lambda Function
 
-When real-time incoming data is stored in S3 using  Data Firehose, files with small data size are created.
+:information_source: When real-time incoming data is stored in S3 using  Data Firehose, files with small data size are created.
 To improve the query performance of Amazon Athena, it is recommended to combine small files into one large file.
 To run these tasks periodically, we are going to create an AWS Lambda function function that executes Athena's Create Table As Select (CTAS) query.
 
@@ -188,17 +188,17 @@ To run these tasks periodically, we are going to create an AWS Lambda function f
     ```
 
 ### Step 2: Create an AWS Lambda Function
+:information_source: This function is to merge small file every 5 minutes using the transition script in the `athena_ctas.py`. We also grant nesseary access role to the function so that it can tranform the data using Athena, and store in S3.
 1. From the **AWS Lambda Console**, create a python function named `MergeSmallFiles` 
 2. Make **CloudWatch Events/EventBridge** as a trigger to execute the function.
-7. for event **Trigger configuration**,
+3. for event **Trigger configuration**,
   + `Schedule expression` as the rule type
-  + enter `cron(5 * * * *)`
-  this will run the task every 5 minutes as a scheduled expression.
- ![aws-athena-ctas-lambda-add-trigger](./assets/aws-athena-ctas-lambda-add-trigger.png)
-8. In **Trigger configuration**, click **\[Add\]**.
-9. Copy and paste the script from the `athena_ctas.py` [file](./athena_ctas.py) into the code editor of the Function code. Click **Deploy**.
-10. Click **\[Add environment variables\]** to register the following environment variables.
-  ```buildoutcfg
+  + enter `cron(5 * * * *)` </br>
+  This will run the task every 5 minutes as a scheduled expression.
+4. In **Trigger configuration**, click **\[Add\]**.
+5. Copy and paste the script from the `athena_ctas.py` [file](./athena_ctas.py) into the code editor of the Function code. Click **Deploy**.
+6. Click **\[Add environment variables\]** to register the following environment variables.
+  ```shell script
     OLD_DATABASE=mydatabase
     OLD_TABLE_NAME=retail_trans_json
     NEW_DATABASE=mydatabase
@@ -209,16 +209,14 @@ To run these tasks periodically, we are going to create an AWS Lambda function f
     STAGING_OUTPUT_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/tmp
     COLUMN_NAMES=invoice,stockcode,description,quantity,invoicedate,price,customer_id,country
   ``` 
-11. To add the IAM Policy required to execute Athena queries, click `View the MergeSmallFiles-role-XXXXXXXX role on the IAM console.` in the Execution role and modify the IAM Role.
- ![aws-athena-ctas-lambda-execution-iam-role](./assets/aws-athena-ctas-lambda-execution-iam-role.png)
-12. After clicking the **Attach policies** button in the **Permissions** tab of IAM Role, add **AmazonAthenaFullAccess** and **AmazonS3FullAccess** in order.
- ![aws-athena-ctas-lambda-iam-role-policies](./assets/aws-athena-ctas-lambda-iam-role-policies.png)
-13. Select **Edit** in Basic settings. Adjust Memory and Timeout appropriately. In this lab, we set Timout to `5 min`.
-
+7. Grant IAM Policy required for the`MergeSmallFiles-role-XXXXXXXX` under execution role configuration of the fuction
+ ![aws-athena-ctas-lambda-execution-iam-role](./part1/athena-ctas-role.jpeg)
+8. Attach policies to the role, namely **AmazonAthenaFullAccess** and **AmazonS3FullAccess** in order.
+ ![aws-athena-ctas-lambda-iam-role-policies](./part1/merge-sm-files-perm.png)
+9. For **Basic settings** of the function. set Timout to `5 min`.
 
 ## <a name="amazon-quicksight-visualization"></a>Data visualization with QuickSight
-
-In this section, we will use Amazon QuickSight to visualize the data that was collected by Kinesis, stored in S3, and analyzed using Athena previously.
+As the final goal, we use Amazon QuickSight to visualize the data that was collected by Kinesis, stored in S3, and analyzed using Athena previously.
 
 ![aws-analytics-system-build-steps](./assets/aws-analytics-system-build-steps.svg)
 
