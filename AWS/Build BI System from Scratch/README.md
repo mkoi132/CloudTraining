@@ -194,7 +194,8 @@ To run these tasks periodically, we are going to create an AWS Lambda function f
 3. for event **Trigger configuration**,
   + `Schedule expression` as the rule type
   + enter `cron(5 * * * *)` </br>
-  This will run the task every 5 minutes as a scheduled expression.
+  This will run the task every 5 minutes as a scheduled expression. </br>
+  cron(min, hour, D, M, DoW )
 4. In **Trigger configuration**, click **\[Add\]**.
 5. Copy and paste the script from the `athena_ctas.py` [file](./athena_ctas.py) into the code editor of the Function code. Click **Deploy**.
 6. Click **\[Add environment variables\]** to register the following environment variables.
@@ -259,9 +260,9 @@ An OpenSearch cluster is created to store and analyze data in real time. An Open
 
 ![aws-analytics-system-build-steps](./assets/aws-analytics-system-build-steps.svg)
 
-1. In the [AWS Management Console](https://aws.amazon.com), choose **Amazon OpenSearch Service** under **Analytics**.
+1. Navigate to **Amazon OpenSearch Service** under **Analytics**.
 2. Choose **Create a new domain**.
-3. Provide a name for the domain. The examples in this tutorial use the name `retail`.
+3. Provide a name for the domain. The examples in this tutorial use the name `salesv1`.
 4. Ignore the **Custom endpoint** setting.
 5. For the deployment type, choose **Production**.
 6. For **Version**, choose the latest version. For more information about the versions, see [Supported OpenSearch Versions](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html#choosing-version).
@@ -272,8 +273,9 @@ An OpenSearch cluster is created to store and analyze data in real time. An Open
 11. For **Access policy**, choose **Only use fine-grained access control**.
 12. Ignore the rest of the settings and choose **Create**.
     New domains typically take 15–30 minutes to initialize, but can take longer depending on the configuration.
+Opensearch cluster configuration: 
+![aws-opensearch-domain](./part2/open-search-cluster-conf.png)
 
-\[[Top](#top)\]
 
 ## <a name="amazon-lambda-function"></a>Ingest real-time data into OpenSearch using AWS Lambda Functions
 

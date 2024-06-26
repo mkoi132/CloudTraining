@@ -21,8 +21,8 @@ In last, uncheck **Require password reset**.
 5. Click the **\[Next: Permissions\]** button, select **Attach existing policies directly**, and add **AdministratorAccess** privileges.
  ![iam-user-policy](../assets/iam-user-policy.png)
 6. Click the **\[Next: Review\]** button, check the information, and click the **Create user** button.
-7. Click the **Download.csv** button to download the new user's information. This file is essential for setting up EC2, so save it in a location that is easy to remember.
- ![iam-user-download](../assets/iam-user-download.png)
+7. Login to the new user Management console and generate access key information
+ ![iam-user-download](./SettingUp/iam-access-key.png)
 
 
 ## <a name="vpc"></a>Creating a new VPC
@@ -39,14 +39,14 @@ In last, uncheck **Require password reset**.
 4. Configure necessary rule for the **Security Group**, and then **\[Create\]** a new security group.
 Rules as follow:
 ### Security Groups to the EC2 instance as a bastion host
-**Inbound** rule of this security group allow SSH connection to the host
-![aws-ec2-security-group-for-bastion](../assets/aws-ec2-security-group-for-bastion.png)
+**Inbound** rule of this security group allow SSH connection to the Bastion host
+![aws-ec2-security-group-for-bastion](./SettingUp/inbound-sg-bastion.png)
 ### Security Groups created for use in Elasticsearch Service
-Enter nothing in **Inbound** of the security group rules.
-![aws-ec2-security-group-for-es-client](../assets/aws-ec2-security-group-for-es-client.png)
+**Inbound** rule allowing traffic from OpenSearch service.
+![aws-ec2-security-group-for-es-client](./SettingUp/open-search-sg.png)
 ### Security group for an es cluster
-Enter the following in **Inbound** of the security group rules.
-![aws-ec2-security-group-for-es-cluster](../assets/aws-ec2-security-group-for-es-cluster.png)
+ **Inbound** rule allowing traffic from bastion host
+![aws-ec2-security-group-for-es-cluster](./SettingUp/es-cluster-sg.png)
 
 
 ## <a name="ec2-launch"></a>Launch an EC2 Instance
@@ -54,7 +54,7 @@ Create an EC2 instance that will generate the data needed for the lab in real ti
 This instance is created in public subnet of one AZ for simplicity and advoid unecessary charges.
 
 1. Connect to EC2 service in AWS Management Console.
-2. In the upper right, select your region (e.g., **N. Virginia**).
+2. In the upper right, select your region (e.g., **Ohio**).
 3. Select **Instances** from the left **INSTANCES** menu and click **\[Launch Instance\]** to start creating a new instance.
 4. Instance configurations as follow: 
     + Intance Image: `Amazon Linux 2023, SSD Volume Type`
