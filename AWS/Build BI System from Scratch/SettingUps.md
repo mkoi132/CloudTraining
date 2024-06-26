@@ -17,9 +17,9 @@ Create a VPC with 3 diffrerent AZs (optional - for high availability), configure
 3. Click the **Add user** button to enter the Add User page.
 4. Enter `<user name>` in User name, and then choose both **Programmatic access** and **AWS Management Console access**. Next, enter `<password>` in **Console password**,
 In last, uncheck **Require password reset**.
- ![iam-user](../assets/iam-user.png)
+
 5. Click the **\[Next: Permissions\]** button, select **Attach existing policies directly**, and add **AdministratorAccess** privileges.
- ![iam-user-policy](../assets/iam-user-policy.png)
+
 6. Click the **\[Next: Review\]** button, check the information, and click the **Create user** button.
 7. Login to the new user Management console and generate access key information
  ![iam-user-download](./SettingUp/iam-access-key.png)
