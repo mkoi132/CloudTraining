@@ -103,7 +103,7 @@ We will create tables based on data stored in S3, query those tables using SQL, 
 
 ### Step 2: Create a table
 Peform basic SQL script to structure a table named `retail_trans_json` in database `mydatabase`.</br>
-:information_source: click the **Run Query** button to execute the script. S3 location need to be specified to the designated S3 path.
+:information_source: click the **Run Query** button to execute the script. S3 location need to be specified to the designated S3 path. <br>
     ```shell script
       CREATE EXTERNAL TABLE IF NOT EXISTS `mydatabase.retail_trans_json`(
         `invoice` string COMMENT 'Invoice number',
@@ -128,7 +128,7 @@ Peform basic SQL script to structure a table named `retail_trans_json` in databa
       LOCATION
         's3://aws-analytics-immersion-day-xxxxxxxx/json-data'
     ```
-After creating the table, run the query to load the partition data.
+After creating the table, run the query to load the partition data. </br>
     ```shell script
     MSCK REPAIR TABLE mydatabase.retail_trans_json
     ```
