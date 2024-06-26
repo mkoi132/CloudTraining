@@ -198,7 +198,7 @@ To run these tasks periodically, we are going to create an AWS Lambda function f
 8. In **Trigger configuration**, click **\[Add\]**.
 9. Copy and paste the script from the `athena_ctas.py` [file](./athena_ctas.py) into the code editor of the Function code. Click **Deploy**.
 10. Click **\[Add environment variables\]** to register the following environment variables.
-    ```buildoutcfg
+  ```buildoutcfg
     OLD_DATABASE=mydatabase
     OLD_TABLE_NAME=retail_trans_json
     NEW_DATABASE=mydatabase
@@ -208,7 +208,7 @@ To run these tasks periodically, we are going to create an AWS Lambda function f
     OUTPUT_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/parquet-retail-trans
     STAGING_OUTPUT_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/tmp
     COLUMN_NAMES=invoice,stockcode,description,quantity,invoicedate,price,customer_id,country
-  ```
+  ``` 
 11. To add the IAM Policy required to execute Athena queries, click `View the MergeSmallFiles-role-XXXXXXXX role on the IAM console.` in the Execution role and modify the IAM Role.
  ![aws-athena-ctas-lambda-execution-iam-role](./assets/aws-athena-ctas-lambda-execution-iam-role.png)
 12. After clicking the **Attach policies** button in the **Permissions** tab of IAM Role, add **AmazonAthenaFullAccess** and **AmazonS3FullAccess** in order.
