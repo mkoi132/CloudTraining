@@ -103,8 +103,8 @@ We will create tables based on data stored in S3, query those tables using SQL, 
 
 ### Step 2: Create a table
 Peform basic SQL script to structure a table named `retail_trans_json` in database `mydatabase`.</br>
-:information_source: click the **Run Query** button to execute the script. S3 location need to be specified to the designated S3 path. <br>
-    ```shell script
+:information_source: click the **Run Query** button to execute the script. S3 location need to be specified to the designated S3 path.<br>
+  ```shell script
     CREATE EXTERNAL TABLE IF NOT EXISTS `mydatabase.retail_trans_json`(
       `invoice` string COMMENT 'Invoice number',
       `stockcode` string COMMENT 'Product (item) code',
@@ -127,27 +127,24 @@ Peform basic SQL script to structure a table named `retail_trans_json` in databa
       'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
     LOCATION
       's3://aws-analytics-immersion-day-xxxxxxxx/json-data'
-    ```
-
+  ```
 After creating the table, run the query to load the partition data. </br>
-    ```shell script
+  ```shell script
     MSCK REPAIR TABLE mydatabase.retail_trans_json
-    ```
-
+  ```
 Table created using the script: </br>
 ![athena-db-select](./part1/athena-tbl-creation.jpeg)
 
 ### Step 3: Query Data
-Use simple SQL statement to query 10 transactions from the table.
-    ```shell script
+Use simple SQL statement to query 10 transactions from the table. </br>
+  ```shell script
     SELECT *
     FROM retail_trans_json
     LIMIT 10
-    ```
-    The result is returned:
-    ![aws_athena_select_all_limit_10](./part1/athena-q-10-rslt.png)
+  ```
+  The result is returned:
+  ![aws_athena_select_all_limit_10](./part1/athena-q-10-rslt.png)
 
-:information_source: Athena can peform various SQL statements to query, filter, sort the data based on different parameters, just like writting normal SQL script, but without requiring any Database Servers.
 
 ## <a name="athena-ctas-lambda-function"></a>Combine small files stored in S3 into large files using AWS Lambda Function
 
@@ -201,18 +198,6 @@ To run these tasks periodically, we are going to create an AWS Lambda function f
 8. In **Trigger configuration**, click **\[Add\]**.
 9. Copy and paste the script from the `athena_ctas.py` [file](./athena_ctas.py) into the code editor of the Function code. Click **Deploy**.
 10. Click **\[Add environment variables\]** to register the following environment variables.
-    ```shell script
-    OLD_DATABASE=<source database>
-    OLD_TABLE_NAME=<source table>
-    NEW_DATABASE=<destination database>
-    NEW_TABLE_NAME=<destination table>
-    WORK_GROUP=<athena workgroup>
-    OLD_TABLE_LOCATION_PREFIX=<s3 location prefix of source table>
-    OUTPUT_PREFIX=<destination s3 prefix>
-    STAGING_OUTPUT_PREFIX=<staging s3 prefix used by athena>
-    COLUMN_NAMES=<columns of source table excluding partition keys>
-    ```
-    For example, set Environment variables as follows:
     ```buildoutcfg
     OLD_DATABASE=mydatabase
     OLD_TABLE_NAME=retail_trans_json
@@ -223,7 +208,7 @@ To run these tasks periodically, we are going to create an AWS Lambda function f
     OUTPUT_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/parquet-retail-trans
     STAGING_OUTPUT_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/tmp
     COLUMN_NAMES=invoice,stockcode,description,quantity,invoicedate,price,customer_id,country
-    ```
+  ```
 11. To add the IAM Policy required to execute Athena queries, click `View the MergeSmallFiles-role-XXXXXXXX role on the IAM console.` in the Execution role and modify the IAM Role.
  ![aws-athena-ctas-lambda-execution-iam-role](./assets/aws-athena-ctas-lambda-execution-iam-role.png)
 12. After clicking the **Attach policies** button in the **Permissions** tab of IAM Role, add **AmazonAthenaFullAccess** and **AmazonS3FullAccess** in order.
