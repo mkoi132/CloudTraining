@@ -45,11 +45,11 @@ We will load data into an S3 bucket later on. <br/>
 
 ![bi-system-step1](./arch-first-diagram.png)
 
-Navigate to **Amazon Data Firehose** from the console and **Create Friehorse stream**
+Navigate to **Amazon Data Firehose** from the console and **Create FrieHose stream**
   + Under **Choose a source**, select the **Kinesis Data Stream** and choose `retail-trans` which was created earlier.
   + Select Amazon S3 as **Destination** and click `Create new` to create a new S3 bucket.
   + Quickly created a S3 bucket named `bi-bkt` and navigate back to FireHorse creation.
-  + Under **S3 Prefix**, 
+  + Under **S3 Prefix**, </br>
     Enter S3 prefix as follows:
     ```buildoutcfg
     json-data/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/
@@ -58,64 +58,52 @@ Navigate to **Amazon Data Firehose** from the console and **Create Friehorse str
     ```buildoutcfg
     error-json/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/!{firehose:error-output-type}
     ```
-    :information_source: **The S3 prefixes and S3 Error Prefix are used to define the directory structure for storing data in Amazon S3. These prefixes use placeholders that dynamically insert the current timestamp and error type into the S3 key (path) where the data is stored** </br>
-    (**cf.** [Custom Prefixes for Amazon S3 Objects](https://docs.aws.amazon.com/firehose/latest/dev/s3-prefixes.html))
-  + Set buffer size to `1` MB and buffer interval to `60` seconds in **S3 buffer conditions**. Leave everything else as default.
+    :information_source: **The S3 prefixes and S3 Error Prefix are used to define the directory structure for storing data in Amazon S3. These prefixes use placeholders that dynamically insert the current timestamp and error type into the S3 key (path) where the data is stored**. (**ref.** [Custom Prefixes for Amazon S3 Objects](https://docs.aws.amazon.com/firehose/latest/dev/s3-prefixes.html))
+  + Set buffer size to `1` MB and buffer interval to `60` seconds in **S3 buffer conditions**. Leave everything else as default. </br>
+FireHose stream configurations: </br>
+ ![firehose-creation](./part1/filehorse-configs.png)
 
- ![aws-kinesis-firehose-creatiom](./part1/filehorse-configs.png)
 
+## <a name="kinesis-data-pipeline"></a>Simulate real-time data pipeline operation.
+ Generate sample data flow from EC2 host and verify it is being buffered, processed and stored as follows- `EC2 Bastion host -> Kinesis Data Streams -> Amazon FireHose stream -> S3`.
 
-\[[Top](#top)\]
+![bi-system-step1](./arch-first-diagram.png)
 
-## <a name="kinesis-data-pipeline"></a>Verify data pipeline operation
-In this step, we will generate sample data and verify it is being processed and stored as follows- `Kinesis Data Streams -> Kinesis Data Firehose -> S3`.
-
-![aws-analytics-system-build-steps](./assets/aws-analytics-system-build-steps.svg)
-
-1. Connect SSH to the previously created E2 instance. You can go to the AWS Console and click the **Connect** button on the instance details page, or SSH from your local machine command line using the key pair you downloaded.
+1. Connect SSH to the previously created EC2 instance.
 2. Run `gen_kinesis_data.py` script on the EC2 instance by entering the following command -
     ```shell script
     python3 gen_kinesis_data.py \
-      --region-name us-west-2 \
+      --region-name us-east-2 \
       --service-name kinesis \
       --stream-name retail-trans
     ```
-    If you would like to know more about the usage of this command, you can type
-    ```shell script
-    python3 gen_kinesis_data.py --help
-    ```
-3. Verify that data is generated every second. Let it run for a few minutes and terminate the script. You can enter `Ctrl+C` to end the script execution.
-4. Go to **S3** service and open the bucket you created earlier. You can see that the original data has been delivered by **Kinesis Data Firehose** to S3 and stored in a folder structure by year, month, day, and hour.
+3. Data is generated every second. and buffered into the stream.
+4. Go to **S3** service and open the bucket, the data has been delivered by **Data Firehose** and stored in a formatted folder structure by year, month, day, and hour.
+Buffered data stored in S3. Noticed the formated folder structure: </br>
+ ![s3-object-stored](./part1/s3-object-stored.png)
 
-\[[Top](#top)\]
 
-## <a name="athena"></a>Analyze data using Athena
-Using **Amazon Athena**, you can create tables based on data stored in S3, query those tables using SQL, and view query results.
+## <a name="athena"></a>Query data using Athena
+**Amazon Athena** allow on-demand execution of SQL queries </br>
+We will create tables based on data stored in S3, query those tables using SQL, and view query results.
 
-First, create a database to query the data.
-
-![aws-analytics-system-build-steps](./assets/aws-analytics-system-build-steps.svg)
+![bi-system-step1](./arch-first-diagram.png)
 
 ### Step 1: Create a database
-1. Go to **Athena** from the list of services on the AWS Management console.
-2. The first time you visit Athena console, you will be taken to the **Get Started** page. Click the **Get Started** button to open the query editor.
-3. If this is your first time using Athena, you need to first set an S3 location to save Athena's query results. Click the **set up a query result location in Amazon S3** box.
- ![aws-athena-setup-query-results-location-01](./assets/aws-athena-setup-query-results-location-01.png)
-In this lab, we will create a new folder in the same S3 bucket you created in [\[Step-1b\] Create Kinesis Data Firehose to store data in S3](#kinesis-data-firehose) section.
-For example, set your query location as `s3://aws-analytics-immersion-day-xxxxxxxx/athena-query-results/` (`xxxxxxxx` is the unique string you gave to your S3 bucket)
- ![aws-athena-setup-query-results-location-02](./assets/aws-athena-setup-query-results-location-02.png)
-Unless you are visiting for the first time, Athena Query Editor is oppened.
-4. You can see a query window with sample queries in the Athena Query Editor. You can start typing your SQL query anywhere in this window.
-5. Create a new database called `mydatabase`. Enter the following statement in the query window and click the **Run Query** button.
+1. Navigate to **Athena** from the list of services on the AWS Management console.
+3. First, set an S3 location to save Athena's query results. We will create a new folder in the same S3 bucket acording to the architechture </br>
+ ![aws-athena-setup-query-results-location-01](./part1/athena-q-loc-1.png) </br>
+4. Navigate back to **Query editor**
+  + Create a new database called `mydatabase` bu execute the SQL command:
     ```buildoutcfg
     CREATE DATABASE IF NOT EXISTS mydatabase
     ```
-6. Confirm that the the dropdown list under **Database** section on the left panel has updated with a new database called  `mydatabase`. If you do not see it, make sure the **Data source** is selected to `AwsDataCatalog`.
- ![aws-athena-create-database](./assets/aws-athena-create-database.png)
+  + Select the newly created database `mydatabase` to peform SQL script on it.
+ ![athena-db-select](./part1/athena-db-select.jpeg)
 
 ### Step 2: Create a table
-1. Make sure that `mydatabase` is selected in **Database**, and click the `+` button above the query window to open a new query.
-2. Copy the following query into the query editor window, replace the `xxxxxxx` in the last line under `LOCATION` with the string of your S3 bucket, and click the **Run Query** button to execute the query to create a new table.
+Peform basic SQL script to structure a table named `retail_trans_json` in database `mydatabase`.</br>
+:information_source: click the **Run Query** button to execute the script. S3 location need to be specified to the designated S3 path.
     ```buildoutcfg
     CREATE EXTERNAL TABLE IF NOT EXISTS `mydatabase.retail_trans_json`(
       `invoice` string COMMENT 'Invoice number',
@@ -140,33 +128,106 @@ Unless you are visiting for the first time, Athena Query Editor is oppened.
     LOCATION
       's3://aws-analytics-immersion-day-xxxxxxxx/json-data'
     ```
-    If the query is successful, a table named `retail_trans_json` is created and displayed on the left panel under the **Tables** section.
-
-    If you get an error, check if (a) you have updated the `LOCATION` to the correct S3 bucket name, (b) you have `mydatabase` selected under the **Database** dropdown, and (c) you have `AwsDataCatalog` selected as the **Data source**.
-3. After creating the table, click the `+` button to create a new query. Run the following query to load the partition data.
+After creating the table, run the query to load the partition data.
     ```buildoutcfg
     MSCK REPAIR TABLE mydatabase.retail_trans_json
     ```
-
-    You can list all the partitions in the Athena table in unsorted order by running the following query.
-    ```buildoutcfg
-    SHOW PARTITIONS mydatabase.retail_trans_json
-    ```
+Table created using the script: </br>
+![athena-db-select](./part1/athena-tbl-creation.jpeg)
 
 ### Step 3: Query Data
-+ Click the `+` button to open a new query tab. Enter the following SQL statement to query 10 transactions from the table and click **Run Query**.
+Use simple SQL statement to query 10 transactions from the table.
     ```buildoutcfg
     SELECT *
     FROM retail_trans_json
     LIMIT 10
     ```
-    The result is returned in the following format:
-    ![aws_athena_select_all_limit_10](./assets/aws_athena_select_all_limit_10.png)
+    The result is returned:
+    ![aws_athena_select_all_limit_10](./part1/athena-q-10-rslt.png)
 
-    You can experiment with writing different SQL statements to query, filter, sort the data based on different parameters.
-    You have now learned how Amazon Athena allows querying data in Amazon S3 easily without requiring any database servers.
+:information_source: Athena can peform various SQL statements to query, filter, sort the data based on different parameters, just like writting normal SQL script, but without requiring any Database Servers.
 
-\[[Top](#top)\]
+## <a name="athena-ctas-lambda-function"></a>Combine small files stored in S3 into large files using AWS Lambda Function
+
+When real-time incoming data is stored in S3 using  Data Firehose, files with small data size are created.
+To improve the query performance of Amazon Athena, it is recommended to combine small files into one large file.
+To run these tasks periodically, we are going to create an AWS Lambda function function that executes Athena's Create Table As Select (CTAS) query.
+
+![aws-analytics-system-build-steps-extra](./arch-first-diagram.png)
+
+### Step 1: Create a table to store CTAS query results
+1. Access **Athena Query Editor**, set an S3 location to save Athena's CTAS query results output
+![athena-ctas-loc](./part1/athena-q-loc2.jpeg)
+3. Select `mydatabase` to peform SQL script on it. The SQL script change the json format data of the original `retal_tran_json` table into parquet format and store it in a table called `ctas_retail_trans_parquet`.<br/>
+    ```buildoutcfg
+    CREATE EXTERNAL TABLE `mydatabase.ctas_retail_trans_parquet`(
+      `invoice` string COMMENT 'Invoice number',
+      `stockcode` string COMMENT 'Product (item) code',
+      `description` string COMMENT 'Product (item) name',
+      `quantity` int COMMENT 'The quantities of each product (item) per transaction',
+      `invoicedate` timestamp COMMENT 'Invoice date and time',
+      `price` float COMMENT 'Unit price',
+      `customer_id` string COMMENT 'Customer number',
+      `country` string COMMENT 'Country name')
+    PARTITIONED BY (
+      `year` int,
+      `month` int,
+      `day` int,
+      `hour` int)
+    ROW FORMAT SERDE
+      'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+    STORED AS INPUTFORMAT
+      'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+    OUTPUTFORMAT
+      'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+    LOCATION
+      's3://aws-analytics-immersion-day-xxxxxxxx/parquet-retail-trans'
+    TBLPROPERTIES (
+      'has_encrypted_data'='false',
+      'parquet.compression'='SNAPPY')
+    ;
+    ```
+
+### Step 2: Create an AWS Lambda Function
+1. From the **AWS Lambda Console**, create a python function named `MergeSmallFiles` 
+2. Make **CloudWatch Events/EventBridge** as a trigger to execute the function.
+7. for event **Trigger configuration**,
+  + `Schedule expression` as the rule type
+  + enter `cron(5 * * * *)`
+  this will run the task every 5 minutes as a scheduled expression.
+ ![aws-athena-ctas-lambda-add-trigger](./assets/aws-athena-ctas-lambda-add-trigger.png)
+8. In **Trigger configuration**, click **\[Add\]**.
+9. Copy and paste the script from the `athena_ctas.py` [file](./athena_ctas.py) into the code editor of the Function code. Click **Deploy**.
+10. Click **\[Add environment variables\]** to register the following environment variables.
+    ```shell script
+    OLD_DATABASE=<source database>
+    OLD_TABLE_NAME=<source table>
+    NEW_DATABASE=<destination database>
+    NEW_TABLE_NAME=<destination table>
+    WORK_GROUP=<athena workgroup>
+    OLD_TABLE_LOCATION_PREFIX=<s3 location prefix of source table>
+    OUTPUT_PREFIX=<destination s3 prefix>
+    STAGING_OUTPUT_PREFIX=<staging s3 prefix used by athena>
+    COLUMN_NAMES=<columns of source table excluding partition keys>
+    ```
+    For example, set Environment variables as follows:
+    ```buildoutcfg
+    OLD_DATABASE=mydatabase
+    OLD_TABLE_NAME=retail_trans_json
+    NEW_DATABASE=mydatabase
+    NEW_TABLE_NAME=ctas_retail_trans_parquet
+    WORK_GROUP=primary
+    OLD_TABLE_LOCATION_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/json-data
+    OUTPUT_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/parquet-retail-trans
+    STAGING_OUTPUT_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/tmp
+    COLUMN_NAMES=invoice,stockcode,description,quantity,invoicedate,price,customer_id,country
+    ```
+11. To add the IAM Policy required to execute Athena queries, click `View the MergeSmallFiles-role-XXXXXXXX role on the IAM console.` in the Execution role and modify the IAM Role.
+ ![aws-athena-ctas-lambda-execution-iam-role](./assets/aws-athena-ctas-lambda-execution-iam-role.png)
+12. After clicking the **Attach policies** button in the **Permissions** tab of IAM Role, add **AmazonAthenaFullAccess** and **AmazonS3FullAccess** in order.
+ ![aws-athena-ctas-lambda-iam-role-policies](./assets/aws-athena-ctas-lambda-iam-role-policies.png)
+13. Select **Edit** in Basic settings. Adjust Memory and Timeout appropriately. In this lab, we set Timout to `5 min`.
+
 
 ## <a name="amazon-quicksight-visualization"></a>Data visualization with QuickSight
 
@@ -205,94 +266,7 @@ Click **Validate connection** to change to `Validated`, then click the **Create 
 
 \[[Top](#top)\]
 
-## <a name="athena-ctas-lambda-function"></a>(Optional) Combine small files stored in S3 into large files using AWS Lambda Function
 
-When real-time incoming data is stored in S3 using Kinesis Data Firehose, files with small data size are created.
-To improve the query performance of Amazon Athena, it is recommended to combine small files into one large file.
-To run these tasks periodically, we are going to create an AWS Lambda function function that executes Athena's Create Table As Select (CTAS) query.
-
-![aws-analytics-system-build-steps-extra](./assets/aws-analytics-system-build-steps-extra.svg)
-
-### Step 1: Create a table to store CTAS query results
-1. Access **Athena Console** and go to the Athena Query Editor.
-2. Select mydatabase from **DATABASE** and navigate to **New Query**.
-3. Enter the following CREATE TABLE statement in the query window and select **Run Query**.<br/>
-In this exercise, we will change the json format data of the `retal_tran_json` table into parquet format and store it in a table called `ctas_retail_trans_parquet`.<br/>
-The data in the `ctas_retail_trans_parquet` table will be saved in the location `s3://aws-analytics-immersion-day-xxxxxxxx/parquet-retail-trans` of the S3 bucket created earlier.
-    ```buildoutcfg
-    CREATE EXTERNAL TABLE `mydatabase.ctas_retail_trans_parquet`(
-      `invoice` string COMMENT 'Invoice number',
-      `stockcode` string COMMENT 'Product (item) code',
-      `description` string COMMENT 'Product (item) name',
-      `quantity` int COMMENT 'The quantities of each product (item) per transaction',
-      `invoicedate` timestamp COMMENT 'Invoice date and time',
-      `price` float COMMENT 'Unit price',
-      `customer_id` string COMMENT 'Customer number',
-      `country` string COMMENT 'Country name')
-    PARTITIONED BY (
-      `year` int,
-      `month` int,
-      `day` int,
-      `hour` int)
-    ROW FORMAT SERDE
-      'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-    STORED AS INPUTFORMAT
-      'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-    OUTPUTFORMAT
-      'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
-    LOCATION
-      's3://aws-analytics-immersion-day-xxxxxxxx/parquet-retail-trans'
-    TBLPROPERTIES (
-      'has_encrypted_data'='false',
-      'parquet.compression'='SNAPPY')
-    ;
-    ```
-
-### Step 2: Create an AWS Lambda Function
-1. Open the **AWS Lambda Console**.
-2. Select **Create a function**.
-3. Enter `MergeSmallFiles` for Function name.
-4. Select `Python 3.11` in Runtime.
-5. Select **Create a function**.
- ![aws-athena-ctas-lambda-create-function](./assets/aws-athena-ctas-lambda-create-function.png)
-6. Select **Add trigger** in the Designer tab.
-7. Select **CloudWatch Events/EventBridge** in `Select a trigger` of **Trigger configuration**.
-Select `Create a new rule` in Rule and enter the appropriate rule name (eg `MergeSmallFilesEvent`) in Rule name.
-Select `Schedule expression` as the rule type, and enter `cron(5 * * * *)` for running the task every 5 minutes in the schedule expression.
- ![aws-athena-ctas-lambda-add-trigger](./assets/aws-athena-ctas-lambda-add-trigger.png)
-8. In **Trigger configuration**, click **\[Add\]**.
-9. Copy and paste the code from the `athena_ctas.py` file into the code editor of the Function code. Click **Deploy**.
-10. Click **\[Add environment variables\]** to register the following environment variables.
-    ```shell script
-    OLD_DATABASE=<source database>
-    OLD_TABLE_NAME=<source table>
-    NEW_DATABASE=<destination database>
-    NEW_TABLE_NAME=<destination table>
-    WORK_GROUP=<athena workgroup>
-    OLD_TABLE_LOCATION_PREFIX=<s3 location prefix of source table>
-    OUTPUT_PREFIX=<destination s3 prefix>
-    STAGING_OUTPUT_PREFIX=<staging s3 prefix used by athena>
-    COLUMN_NAMES=<columns of source table excluding partition keys>
-    ```
-    For example, set Environment variables as follows:
-    ```buildoutcfg
-    OLD_DATABASE=mydatabase
-    OLD_TABLE_NAME=retail_trans_json
-    NEW_DATABASE=mydatabase
-    NEW_TABLE_NAME=ctas_retail_trans_parquet
-    WORK_GROUP=primary
-    OLD_TABLE_LOCATION_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/json-data
-    OUTPUT_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/parquet-retail-trans
-    STAGING_OUTPUT_PREFIX=s3://aws-analytics-immersion-day-xxxxxxxx/tmp
-    COLUMN_NAMES=invoice,stockcode,description,quantity,invoicedate,price,customer_id,country
-    ```
-11. To add the IAM Policy required to execute Athena queries, click `View the MergeSmallFiles-role-XXXXXXXX role on the IAM console.` in the Execution role and modify the IAM Role.
- ![aws-athena-ctas-lambda-execution-iam-role](./assets/aws-athena-ctas-lambda-execution-iam-role.png)
-12. After clicking the **Attach policies** button in the **Permissions** tab of IAM Role, add **AmazonAthenaFullAccess** and **AmazonS3FullAccess** in order.
- ![aws-athena-ctas-lambda-iam-role-policies](./assets/aws-athena-ctas-lambda-iam-role-policies.png)
-13. Select **Edit** in Basic settings. Adjust Memory and Timeout appropriately. In this lab, we set Timout to `5 min`.
-
-\[[Top](#top)\]
 
 ## <a name="amazon-es"></a>Create Amazon OpenSearch Service for Real-Time Data Analysis
 
