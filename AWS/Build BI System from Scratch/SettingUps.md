@@ -13,16 +13,11 @@ Create a VPC with 3 diffrerent AZs (optional - for high availability), configure
 
 ## <a name="iam-user"></a>Creating an IAM User
 1. Log in to the AWS Management Console and access the IAM service.
-2. Select **Users** from the left menu.
-3. Click the **Add user** button to enter the Add User page.
-4. Enter `<user name>` in User name, and then choose both **Programmatic access** and **AWS Management Console access**. Next, enter `<password>` in **Console password**,
-In last, uncheck **Require password reset**.
-
-5. Click the **\[Next: Permissions\]** button, select **Attach existing policies directly**, and add **AdministratorAccess** privileges.
-
-6. Click the **\[Next: Review\]** button, check the information, and click the **Create user** button.
-7. Login to the new user Management console and generate access key information
- ![iam-user-download](./SettingUp/iam-access-key.png)
+2. Create a new **Users**  and give full access **Programmatic access** and **AWS Management Console access**.
+3. Click the **\[Next: Permissions\]** button, and attach existing **AdministratorAccess** privileges policies.
+4. Download credentials and Login to the new user Management console.
+5. generate access key information
+![iam-user-download](./SettingUp/iam-access-key.png)
 
 
 ## <a name="vpc"></a>Creating a new VPC
@@ -30,7 +25,7 @@ In last, uncheck **Require password reset**.
 2. Select **Create new VPC** to start the VPC creation wizard
 3. Follow the creation wizard to create a new VPC with 3 AZs in the same Region (I'm using us-east-2 Ohio).
 *In this lab I only use 1 AZ to host my instance. VPC is set up across different AZs, further implementations(autoscaling, ALB,...) could be implemented to ensure a high availability deployment.*
-
+![setting-up-architecture](./SettingUp/Setting-up-arch.png)
 
 ## <a name="security-group"></a>Creating Security Groups
 1. Navigate to the EC2 service in the AWS Management Console.
