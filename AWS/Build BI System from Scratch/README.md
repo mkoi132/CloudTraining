@@ -51,11 +51,11 @@ Navigate to **Amazon Data Firehose** from the console and **Create FrieHose stre
   + Quickly created a S3 bucket named `bi-bkt` and navigate back to FireHorse creation.
   + Under **S3 Prefix**, </br>
     Enter S3 prefix as follows:
-    ```buildoutcfg
+    ```shell script
     json-data/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/
     ```
     Enter S3 error prefix as follows:
-    ```buildoutcfg
+    ```shell script
     error-json/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/!{firehose:error-output-type}
     ```
     :information_source: **The S3 prefixes and S3 Error Prefix are used to define the directory structure for storing data in Amazon S3. These prefixes use placeholders that dynamically insert the current timestamp and error type into the S3 key (path) where the data is stored**. (**ref.** [Custom Prefixes for Amazon S3 Objects](https://docs.aws.amazon.com/firehose/latest/dev/s3-prefixes.html))
@@ -95,7 +95,7 @@ We will create tables based on data stored in S3, query those tables using SQL, 
  ![aws-athena-setup-query-results-location-01](./part1/athena-q-loc-1.png) </br>
 4. Navigate back to **Query editor**
   + Create a new database called `mydatabase` bu execute the SQL command:
-    ```buildoutcfg
+    ```shell script
     CREATE DATABASE IF NOT EXISTS mydatabase
     ```
   + Select the newly created database `mydatabase` to peform SQL script on it.
@@ -104,7 +104,7 @@ We will create tables based on data stored in S3, query those tables using SQL, 
 ### Step 2: Create a table
 Peform basic SQL script to structure a table named `retail_trans_json` in database `mydatabase`.</br>
 :information_source: click the **Run Query** button to execute the script. S3 location need to be specified to the designated S3 path.
-    ```buildoutcfg
+    ```shell script
     CREATE EXTERNAL TABLE IF NOT EXISTS `mydatabase.retail_trans_json`(
       `invoice` string COMMENT 'Invoice number',
       `stockcode` string COMMENT 'Product (item) code',
@@ -129,7 +129,7 @@ Peform basic SQL script to structure a table named `retail_trans_json` in databa
       's3://aws-analytics-immersion-day-xxxxxxxx/json-data'
     ```
 After creating the table, run the query to load the partition data.
-    ```buildoutcfg
+    ```shell script
     MSCK REPAIR TABLE mydatabase.retail_trans_json
     ```
 Table created using the script: </br>
@@ -137,7 +137,7 @@ Table created using the script: </br>
 
 ### Step 3: Query Data
 Use simple SQL statement to query 10 transactions from the table.
-    ```buildoutcfg
+    ```shell script
     SELECT *
     FROM retail_trans_json
     LIMIT 10
@@ -159,7 +159,7 @@ To run these tasks periodically, we are going to create an AWS Lambda function f
 1. Access **Athena Query Editor**, set an S3 location to save Athena's CTAS query results output
 ![athena-ctas-loc](./part1/athena-q-loc2.jpeg)
 3. Select `mydatabase` to peform SQL script on it. The SQL script change the json format data of the original `retal_tran_json` table into parquet format and store it in a table called `ctas_retail_trans_parquet`.<br/>
-    ```buildoutcfg
+    ```shell script
     CREATE EXTERNAL TABLE `mydatabase.ctas_retail_trans_parquet`(
       `invoice` string COMMENT 'Invoice number',
       `stockcode` string COMMENT 'Product (item) code',
