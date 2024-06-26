@@ -1,0 +1,10 @@
+$ python3 -m venv es-lib
+$ cd es-lib
+$ source bin/activate
+(es-lib) $ mkdir -p python_modules
+(es-lib) $ pip install 'elasticsearch < 7.14' requests requests-aws4auth -t python_modules
+(es-lib) $ mv python_modules python
+(es-lib) $ zip -r es-lib.zip python/
+(es-lib) $ aws s3 mb s3://my-bucket-for-lambda-layer-packages
+(es-lib) $ aws s3 cp es-lib.zip s3://my-bucket-for-lambda-layer-packages/python/
+(es-lib) $ deactivate
