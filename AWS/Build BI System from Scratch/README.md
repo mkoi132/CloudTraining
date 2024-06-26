@@ -105,28 +105,28 @@ We will create tables based on data stored in S3, query those tables using SQL, 
 Peform basic SQL script to structure a table named `retail_trans_json` in database `mydatabase`.</br>
 :information_source: click the **Run Query** button to execute the script. S3 location need to be specified to the designated S3 path.
     ```shell script
-    CREATE EXTERNAL TABLE IF NOT EXISTS `mydatabase.retail_trans_json`(
-      `invoice` string COMMENT 'Invoice number',
-      `stockcode` string COMMENT 'Product (item) code',
-      `description` string COMMENT 'Product (item) name',
-      `quantity` int COMMENT 'The quantities of each product (item) per transaction',
-      `invoicedate` timestamp COMMENT 'Invoice date and time',
-      `price` float COMMENT 'Unit price',
-      `customer_id` string COMMENT 'Customer number',
-      `country` string COMMENT 'Country name')
-    PARTITIONED BY (
-      `year` int,
-      `month` int,
-      `day` int,
-      `hour` int)
-    ROW FORMAT SERDE
-      'org.openx.data.jsonserde.JsonSerDe'
-    STORED AS INPUTFORMAT
-      'org.apache.hadoop.mapred.TextInputFormat'
-    OUTPUTFORMAT
-      'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
-    LOCATION
-      's3://aws-analytics-immersion-day-xxxxxxxx/json-data'
+      CREATE EXTERNAL TABLE IF NOT EXISTS `mydatabase.retail_trans_json`(
+        `invoice` string COMMENT 'Invoice number',
+        `stockcode` string COMMENT 'Product (item) code',
+        `description` string COMMENT 'Product (item) name',
+        `quantity` int COMMENT 'The quantities of each product (item) per transaction',
+        `invoicedate` timestamp COMMENT 'Invoice date and time',
+        `price` float COMMENT 'Unit price',
+        `customer_id` string COMMENT 'Customer number',
+        `country` string COMMENT 'Country name')
+      PARTITIONED BY (
+        `year` int,
+        `month` int,
+        `day` int,
+        `hour` int)
+      ROW FORMAT SERDE
+        'org.openx.data.jsonserde.JsonSerDe'
+      STORED AS INPUTFORMAT
+        'org.apache.hadoop.mapred.TextInputFormat'
+      OUTPUTFORMAT
+        'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+      LOCATION
+        's3://aws-analytics-immersion-day-xxxxxxxx/json-data'
     ```
 After creating the table, run the query to load the partition data.
     ```shell script
