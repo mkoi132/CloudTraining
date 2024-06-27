@@ -89,11 +89,11 @@ Configure the EC2 instances to access and control other AWS resources as follows
 3. In order to run the Python synthentic data generator script (`gen_kinesis_data.py`), we need to set user credentials by following the instructions:
 Perform `aws configure` to access other AWS resources. At this time, the IAM User credentials created earlier is used.
 Enter the IAM user credentials for the `Access key ID` and `Secret access key`.
-       ```shell script
+    ```shell script
        $ aws configure
        AWS Access Key ID [None]: <Access key ID>
        AWS Secret Access Key [None]: <Secret access key>
        Default region name [None]: us-east-2
        Default output format [None]:
-       ```
+    ```
 [Continue](./README.md)
