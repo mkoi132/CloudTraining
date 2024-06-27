@@ -362,14 +362,14 @@ Overall `UpsertToES` Function should look like this:
 ### <a name="create-firehose-role"></a>Enable the Lambda function to ingest records into Amazon OpenSearch
 
 The lambda function uses the delivery role to sign HTTP (Signature Version 4) requests before sending the data to the Amazon OpenSearch Service endpoint. This section describes how to create roles and set permissions for the lambda function. </br>
-The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSearch endpoint and the Kibana endpoint are not available over the internet. In order to access the endpoints, we have to create a ssh tunnel and do local port forwarding. <br/>
 
+The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSearch endpoint and the Kibana endpoint are not available over the internet. In order to access the endpoints, we have to create a ssh tunnel and do local port forwarding. <br/>
 1. Using SSH Tunneling via CLI command from a local PC. This tunnel will connect to the `Bastion` host then do port forwarding to the OpenSearch service domain.</br>
-  ```shell script
-    ssh -i ~/.ssh/<key.pem> ec2-user@<ip-of-bastion> -N -L 9200:<VPC-enpoint-of-domain>:443
-  ```
-  Replace`<ip-of-bastion>` and `<VPC-enpoint-of-domain>` as neccesary, `<key.pem>` is used to access the `Bastion` and is stored in the  directory of `~/.ssh/`.Onced opened, the tunnel will run indefinitely, use **Ctrl+C** to disrupt it.
-2. Access open search service via `https://localhost:9200/_dashboards/app/login?` in a web browser.
+    ```shell script
+      ssh -i ~/.ssh/<key.pem> ec2-user@<ip-of-bastion> -N -L 9200:<VPC-enpoint-of-domain>:443
+    ```
+    Replace`<ip-of-bastion>` and `<VPC-enpoint-of-domain>` as neccesary, `<key.pem>` is used to access the `Bastion` and is stored in the  directory of `~/.ssh/`.Onced opened, the tunnel will run indefinitely, use **Ctrl+C** to disrupt it.
+2. Access open search service via `https://localhost:9200/_dashboards/app/login?` in a web browser. </br>
 3. Enter the master `username` and `password` for Amazon OpenSearch Service endpoint.
 4. From the dashboaRd, configure **Security** in the toolbar.
 5. Under **Security**, create a new role called `firehose_role`.
