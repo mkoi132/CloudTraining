@@ -365,6 +365,7 @@ The lambda function uses the delivery role to sign HTTP (Signature Version 4) re
 
 The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSearch endpoint and the Kibana endpoint are not available over the internet. In order to access the endpoints, we have to create a ssh tunnel and do local port forwarding. <br/>
 1. Using SSH Tunneling via CLI command from a local PC. This tunnel will connect to the `Bastion` host then do port forwarding to the OpenSearch service domain.</br>
+
     ```shell script
       ssh -i ~/.ssh/<key.pem> ec2-user@<ip-of-bastion> -N -L 9200:<VPC-enpoint-of-domain>:443
     ```
@@ -420,24 +421,16 @@ The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSea
 15. (Dashboards) You can see the following Dashboards.
     ![kibana-13-complete](./assets/kibana-13-complete.png)
 
-\[[Top](#top)\]
 
-## Recap and Review
-
-:warning: **At the end of this lab, you should delete the resources you used to avoid incurring additional charges for the AWS account you used.**
-
+## Recap
 Through this lab, we have built a Business Intelligent System with Lambda Architecture such that consists of real-time data processing and batch data processing layers.
+:warning: **delete the resources implemented avoid incurring additional charges on the AWS account.** </br>
 
-\[[Top](#top)\]
-
-## Resources
-+ slide: [AWS Analytics Immersion Day - Build BI System from Scratch](http://tinyurl.com/serverless-bi-on-aws)
-+ data source: [Online Retail II Data Set](https://archive.ics.uci.edu/ml/datasets/Online+Retail+II)
-
-\[[Top](#Top)\]
+\[[Back to Top](#top)\]</br>
+[Check out my other AWS Projects](https://github.com/mkoi132/CloudTraining/tree/9c196049be094cef6db17b74f2126908b22837c2/AWS)</br>
 
 ## Reference
-### AWS Developer Guide By Services
++ data source: [Online Retail II Data Set](https://archive.ics.uci.edu/ml/datasets/Online+Retail+II)
 + [Amazon Simple Storage Service (Amazon S3)](https://docs.aws.amazon.com/AmazonS3/latest/dev/Introduction.html)
 + [Amazon Athena](https://docs.aws.amazon.com/athena/latest/ug/what-is.html)
 + [Amazon OpenSearch Service](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html)
@@ -446,204 +439,10 @@ Through this lab, we have built a Business Intelligent System with Lambda Archit
 + [Amazon Kinesis Data Streams](https://docs.aws.amazon.com/streams/latest/dev/introduction.html)
 + [Amazon QuickSight](https://docs.aws.amazon.com/quicksight/latest/user/welcome.html)
 + [AWS Lambda Layers](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html#configuration-layers-path)
-    + <a name="aws-lambda-layer-python-packages"></a>Example of creating a python package to register with AWS Lambda layer: **elasticsearch**
-
-      :warning: **You should create the python package on Amazon Linux, otherwise create it using a simulated Lambda environment with Docker.**
-      <pre>
-      [ec2-user@ip-172-31-6-207 ~] $ python3 -m venv es-lib
-      [ec2-user@ip-172-31-6-207 ~] $ cd es-lib
-      [ec2-user@ip-172-31-6-207 ~] $ source bin/activate
-      (es-lib) $ mkdir -p python_modules
-      (es-lib) $ pip install opensearch-py==2.0.1 requests==2.31.0 requests-aws4auth==1.1.2 -t python_modules
-      (es-lib) $ mv python_modules python
-      (es-lib) $ zip -r es-lib.zip python/
-      (es-lib) $ aws s3 mb s3://my-bucket-for-lambda-layer-packages
-      (es-lib) $ aws s3 cp es-lib.zip s3://my-bucket-for-lambda-layer-packages/var/
-      (es-lib) $ deactivate
-      </pre>
     + [How to create a Lambda layer using a simulated Lambda environment with Docker](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-layer-simulated-docker/)
-      ```
-      $ cat <<EOF > requirements.txt
-      > opensearch-py==2.0.1
-      > requests==2.31.0
-      > requests-aws4auth==1.1.2
-      > EOF
-      $ docker run -v "$PWD":/var/task "public.ecr.aws/sam/build-python3.11" /bin/sh -c "pip install -r requirements.txt -t python/lib/python3.11/site-packages/; exit"
-      $ zip -r es-lib.zip python > /dev/null
-      $ aws s3 mb s3://my-bucket-for-lambda-layer-packages
-      $ aws s3 cp es-lib.zip s3://my-bucket-for-lambda-layer-packages/var/
-      ```
-
 ### <a name="SSH-Tunnel-with-PuTTy-on-Windows"></a>SSH Tunnel for Kibana Instructions with PuTTy on Windows
 + [Windows SSH / Tunnel for Kibana Instructions - Amazon Elasticsearch Service](https://search-sa-log-solutions.s3-us-east-2.amazonaws.com/logstash/docs/Kibana_Proxy_SSH_Tunneling_Windows.pdf)
 + [Use an SSH Tunnel to access Kibana within an AWS VPC with PuTTy on Windows](https://amazonmsk-labs.workshop.aws/en/mskkdaflinklab/createesdashboard.html)
-
-\[[Top](#top)\]
-
-### Further readings
-##### Amazon S3
-+ [New – Automatic Cost Optimization for Amazon S3 via Intelligent Tiering](https://aws.amazon.com/ko/blogs/aws/new-automatic-cost-optimization-for-amazon-s3-via-intelligent-tiering/)
-
-##### Amazon Athena
-+ [Top 10 Performance Tuning Tips for Amazon Athena](https://aws.amazon.com/ko/blogs/big-data/top-10-performance-tuning-tips-for-amazon-athena/)
-+ [Extract, Transform and Load data into S3 data lake using CTAS and INSERT INTO statements in Amazon Athena](https://aws.amazon.com/ko/blogs/big-data/extract-transform-and-load-data-into-s3-data-lake-using-ctas-and-insert-into-statements-in-amazon-athena/)
-+ [Query Amazon S3 analytics data with Amazon Athena](https://aws.amazon.com/blogs/storage/query-amazon-s3-analytics-data-with-amazon-athena/)
-
-##### Amazon Elasticsearch Service
-+ [Elasticsearch tutorial: a quick start guide](https://aws.amazon.com/blogs/database/elasticsearch-tutorial-a-quick-start-guide/)
-+ [Run a petabyte scale cluster in Amazon Elasticsearch Service](https://aws.amazon.com/blogs/database/run-a-petabyte-scale-cluster-in-amazon-elasticsearch-service/)
-+ [Analyze user behavior using Amazon Elasticsearch Service, Amazon Kinesis Data Firehose and Kibana](https://aws.amazon.com/blogs/database/analyze-user-behavior-using-amazon-elasticsearch-service-amazon-kinesis-data-firehose-and-kibana/)
-
-##### AWS Lambda
-+ [Introduction to Messaging for Modern Cloud Architecture](https://aws.amazon.com/blogs/architecture/introduction-to-messaging-for-modern-cloud-architecture/)
-+ [Understanding the Different Ways to Invoke Lambda Functions](https://aws.amazon.com/blogs/architecture/understanding-the-different-ways-to-invoke-lambda-functions/)
-
-##### Amazon Kinesis Data Firehose
-+ [Amazon Kinesis Data Firehose custom prefixes for Amazon S3 objects](https://aws.amazon.com/blogs/big-data/amazon-kinesis-data-firehose-custom-prefixes-for-amazon-s3-objects/)
-+ [Amazon Kinesis Firehose Data Transformation with AWS Lambda](https://aws.amazon.com/blogs/compute/amazon-kinesis-firehose-data-transformation-with-aws-lambda/)
-
-##### Amazon Kinesis Data Streams
-+ [Under the hood: Scaling your Kinesis data streams](https://aws.amazon.com/blogs/big-data/under-the-hood-scaling-your-kinesis-data-streams/)
-+ [Scale Amazon Kinesis Data Streams with AWS Application Auto Scaling](https://aws.amazon.com/blogs/big-data/scaling-amazon-kinesis-data-streams-with-aws-application-auto-scaling/)
-
-##### Amazon Kinesis Data Analytics
-+ [Streaming ETL with Apache Flink and Amazon Kinesis Data Analytics](https://aws.amazon.com/ko/blogs/big-data/streaming-etl-with-apache-flink-and-amazon-kinesis-data-analytics/)
-
-##### Amazon QuickSight
-+ [10 visualizations to try in Amazon QuickSight with sample data](https://aws.amazon.com/blogs/big-data/10-visualizations-to-try-in-amazon-quicksight-with-sample-data/)
-+ [Visualize over 200 years of global climate data using Amazon Athena and Amazon QuickSight](https://aws.amazon.com/blogs/big-data/visualize-over-200-years-of-global-climate-data-using-amazon-athena-and-amazon-quicksight/)
-+ [Advanced analytics with table calculations in Amazon QuickSight](https://aws.amazon.com/ko/blogs/big-data/advanced-analytics-with-table-calculations-in-amazon-quicksight/)
-
-##### Etc
-+ [Optimize downstream data processing with Amazon Kinesis Data Firehose and Amazon EMR running Apache Spark](https://aws.amazon.com/blogs/big-data/optimizing-downstream-data-processing-with-amazon-kinesis-data-firehose-and-amazon-emr-running-apache-spark/)
-+ [Serverless Scaling for Ingesting, Aggregating, and Visualizing Apache Logs with Amazon Kinesis Firehose, AWS Lambda, and Amazon Elasticsearch Service](https://aws.amazon.com/blogs/database/serverless-scaling-for-ingesting-aggregating-and-visualizing-apache-logs-with-amazon-kinesis-firehose-aws-lambda-and-amazon-elasticsearch-service/)
-+ [Analyze Apache Parquet optimized data using Amazon Kinesis Data Firehose, Amazon Athena, and Amazon Redshift](https://aws.amazon.com/blogs/big-data/analyzing-apache-parquet-optimized-data-using-amazon-kinesis-data-firehose-amazon-athena-and-amazon-redshift/)
-+ [Our data lake story: How Woot.com built a serverless data lake on AWS](https://aws.amazon.com/blogs/big-data/our-data-lake-story-how-woot-com-built-a-serverless-data-lake-on-aws/)
-
-##### Securely Connect Bastion Hosts
-+ [Securing your bastion hosts with Amazon EC2 Instance Connect](https://aws.amazon.com/blogs/infrastructure-and-automation/securing-your-bastion-hosts-with-amazon-ec2-instance-connect/)
-
-  ```
-  $ # (1) Create a new ssh key.
-  $ ssh-keygen -t rsa -f my_rsa_key
-
-  $ # (2) Push your SSH public key to the instance.
-  $ aws ec2-instance-connect send-ssh-public-key \
-    --instance-id $BASTION_INSTANCE \
-    --availability-zone $DEPLOY_AZ \
-    --instance-os-user ec2-user \
-    --ssh-public-key file:///path/to/my_rsa_key.pub
-
-  $ # (3) Connect to the instance using your private key.
-  $ ssh -i /path/to/my_rsa_key ec2-user@$BASTION_DNS_NAME
-  ```
-
 + [Connect using the EC2 Instance Connect CLI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html#ec2-instance-connect-connecting-ec2-cli)
-   <pre>
-   $ sudo pip install ec2instanceconnectcli
-   $ mssh ec2-user@i-001234a4bf70dec41EXAMPLE # ec2-instance-id
-   </pre>
 
-\[[Top](#top)\]
 
-## Deployment by AWS CDK
-
-:warning: **At the end of this lab, you should delete the resources you used to avoid incurring additional charges for the AWS account you used.**
-
-Introducing how to deploy using the AWS CDK.
-
-### Prerequisites
-1. Install AWS CDK Toolkit.
-
-    ```shell script
-    npm install -g aws-cdk
-    ```
-
-2. Verify that cdk is installed properly by running the following command:
-    ```
-    cdk --version
-    ```
-   ex)
-    ```shell script
-    $ cdk --version
-    2.41.0 (build 56ba2ab)
-    ```
-
-##### Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-\[[Top](#top)\]
-
-### Deployment
-
-When deployed as CDK, `1(a), 1(b), 1(c), 1(f), 2(b), 2(a)` in the architecture diagram below are automatically created.
-
-![aws-analytics-system-build-steps-extra](./assets/aws-analytics-system-build-steps-extra.svg)
-
-1. Refer to [Getting Started With the AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) to install cdk.
-Create an IAM User to be used when running cdk and register it in `~/.aws/config`. (**cf.** [Creating an IAM User](#preliminaries))<br/>
-For example, after creating an IAM User called cdk_user, add it to `~/.aws/config` as shown below.
-
-    ```shell script
-    $ cat ~/.aws/config
-    [profile cdk_user]
-    aws_access_key_id=AKIAIOSFODNN7EXAMPLE
-    aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-    region=us-west-2
-    ```
-
-2. Create a Python package to register in the Lambda Layer and store it in the s3 bucket. For example, create an s3 bucket named `lambda-layer-resources` so that you can save the elasticsearch package to register in the Lambda Layer as follows.
-
-    ```shell script
-    $ aws s3 ls s3://lambda-layer-resources/var/
-    2019-10-25 08:38:50          0
-    2019-10-25 08:40:28    1294387 es-lib.zip
-    ```
-
-3. After downloading the source code from git, enter the s3 bucket name where the package to be registered in the lambda layer is stored in an environment variable called `S3_BUCKET_LAMBDA_LAYER_LIB`.
-After setting, deploy using the `cdk deploy` command.
-
-    ```shell script
-    $ git clone https://github.com/aws-samples/aws-analytics-immersion-day.git
-    $ cd aws-analytics-immersion-day
-    $ python3 -m venv .env
-    $ source .env/bin/activate
-    (.env) $ pip install -r requirements.txt
-    (.env) $ export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-    (.env) $ export CDK_DEFAULT_REGION=us-west-2
-    (.env) $ cdk bootstrap aws://${CDK_DEFAULT_ACCOUNT}/${CDK_DEFAULT_REGION}
-    (.env) $ export S3_BUCKET_LAMBDA_LAYER_LIB=lambda-layer-resources
-    (.env) $ cdk --profile cdk_user deploy --require-approval never --all
-    ```
-
-   :white_check_mark: `cdk bootstrap ...` command is executed only once for the first time to deploy **CDK toolkit stack**, and for subsequent deployments, you only need to execute `cdk deploy` command without distributing **CDK toolkit stack**.
-
-    ```shell script
-    (.env) $ export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-    (.env) $ export CDK_DEFAULT_REGION=us-west-2
-    (.env) $ export S3_BUCKET_LAMBDA_LAYER_LIB=lambda-layer-resources
-    (.env) $ cdk --profile cdk_user deploy --require-approval never --all
-    ```
-
-3. [Enable the Lambda function to ingest records into Amazon OpenSearch.](#create-firehose-role)
-
-### Clean Up
-
-To delete the deployed application, execute the `cdk destroy` command as follows.
-
-    (.env) $ cdk --profile cdk_user destroy --force --all
-
-\[[Top](#top)\]
-
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-## License
-
-This library is licensed under the MIT-0 License. See the LICENSE file.
