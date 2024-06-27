@@ -422,11 +422,11 @@ The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSea
 
 
 ## Recap
-Through this lab, we have built a Business Intelligent System with Lambda Architecture such that consists of real-time data processing and batch data processing layers. </br>
 :warning: **Delete the resources implemented to avoid incurring additional charges on the AWS account.** </br>
+Through this lab, we have built a Business Intelligent System with Lambda Architecture such that consists of real-time data processing and batch data processing layers. </br>
 
-[:top: Back to Top](#top)</br>
-[Check out my other AWS Projects](https://github.com/mkoi132/CloudTraining/tree/9c196049be094cef6db17b74f2126908b22837c2/AWS)</br>
+[Back to Top](#top)</br>
+:link:[Check out my other AWS Projects](https://github.com/mkoi132/CloudTraining/tree/9c196049be094cef6db17b74f2126908b22837c2/AWS)</br>
 
 ## Reference
 + data source: [Online Retail II Data Set](https://archive.ics.uci.edu/ml/datasets/Online+Retail+II)
