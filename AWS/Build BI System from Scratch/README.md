@@ -422,7 +422,7 @@ The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSea
 
 
 ## Recap
-Through this lab, we have built a Business Intelligent System with Lambda Architecture such that consists of real-time data processing and batch data processing layers.
+Through this lab, we have built a Business Intelligent System with Lambda Architecture such that consists of real-time data processing and batch data processing layers. </br>
 :warning: **delete the resources implemented avoid incurring additional charges on the AWS account.** </br>
 
 \[[Back to Top](#top)\]</br>
@@ -442,5 +442,3 @@ Through this lab, we have built a Business Intelligent System with Lambda Archit
 + [Windows SSH / Tunnel for Kibana Instructions - Amazon Elasticsearch Service](https://search-sa-log-solutions.s3-us-east-2.amazonaws.com/logstash/docs/Kibana_Proxy_SSH_Tunneling_Windows.pdf)
 + [Use an SSH Tunnel to access Kibana within an AWS VPC with PuTTy on Windows](https://amazonmsk-labs.workshop.aws/en/mskkdaflinklab/createesdashboard.html)
 + [Connect using the EC2 Instance Connect CLI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html#ec2-instance-connect-connecting-ec2-cli)
-
-
