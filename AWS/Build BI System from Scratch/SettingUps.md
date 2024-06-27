@@ -37,10 +37,10 @@ Rules as follow:
 **Inbound** rule of this security group allow SSH connection to the Bastion host
 ![aws-ec2-security-group-for-bastion](./SettingUp/inbound-sg-bastion.png)
 ### Security Groups created for use in Elasticsearch Service
-**Inbound** rule allowing traffic from OpenSearch service.
+**Inbound** rule allowing traffic from OpenSearch service security group.
 ![aws-ec2-security-group-for-es-client](./SettingUp/open-search-sg.png)
 ### Security group for an es cluster
- **Inbound** rule allowing traffic from bastion host
+ **Inbound** rule allowing traffic from use-es-sg created earlier
 ![aws-ec2-security-group-for-es-cluster](./SettingUp/es-cluster-sg.png)
 
 

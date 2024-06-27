@@ -250,87 +250,76 @@ Click **Validate connection** to change to `Validated`, then click the **Create 
 16. Users receive the following email: You can check the analysis results by clicking **Click to View**.
    ![aws-quicksight-user-email-click-to-view](./assets/aws-quicksight-user-email-click-to-view.png)
 
-\[[Top](#top)\]
+
 
 
 
 ## <a name="amazon-es"></a>Create Amazon OpenSearch Service for Real-Time Data Analysis
 
-An OpenSearch cluster is created to store and analyze data in real time. An OpenSearch Service domain is synonymous with an OpenSearch cluster. Domains are clusters with the settings, instance types, instance counts, and storage resources that you specify.
+An OpenSearch cluster is created to store and analyze data in real time. An OpenSearch Service domain combined of clusters with the settings, instance types, instance counts, and storage resources.
 
-![aws-analytics-system-build-steps](./assets/aws-analytics-system-build-steps.svg)
+![aws-analytics-system-build-steps](./Arch-diagram.png)
 
-1. Navigate to **Amazon OpenSearch Service** under **Analytics**.
-2. Choose **Create a new domain**.
-3. Provide a name for the domain. The examples in this tutorial use the name `salesv1`.
-4. Ignore the **Custom endpoint** setting.
-5. For the deployment type, choose **Production**.
-6. For **Version**, choose the latest version. For more information about the versions, see [Supported OpenSearch Versions](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html#choosing-version).
-7. Under **Data nodes**, change the instance type to `t3.small.search` and keep the default value of three nodes.
-8. Under **Network**, choose **VPC access (recommended)**. Choose the appropriate VPC and subnet. Select the `es-cluster-sg` created in the preparation step as Security Groups.
-9. In the fine-grained access control settings, choose **Create master user**. Provide a username and password.
-10. For now, ignore the **SAML authentication** and **Amazon Cognito authentication** sections.
-11. For **Access policy**, choose **Only use fine-grained access control**.
-12. Ignore the rest of the settings and choose **Create**.
-    New domains typically take 15–30 minutes to initialize, but can take longer depending on the configuration.
-Opensearch cluster configuration: 
-![aws-opensearch-domain](./part2/open-search-cluster-conf.png)
+1. Navigate to **Amazon OpenSearch Service** and **Create a new domain**.
+2. Provide a name for the domain. I'm using `salesv1`.
+3. For the deployment type, choose **Production**.
+4. For **Version**, I used the latest version. 
+5. Under **Data nodes**, select a instant type as needed.
+6. Under **Network**
+  + choose **VPC access (recommended)**. I use the same VPC that is created earlier
+  + I select `es-cluster-sg` as Security Groups, which allows traffic from `use-es-cluster-sg` (attached to Lambda Function and EC2)
+7. In the fine-grained access control settings, **Create master user** with `username` and `password`
+8. Under **Access policy**, i choose **Only use fine-grained access control** to only access to the service using my `username` and `password` </br>
+
+Open search domain configs:
+![ES-cluster-config](./part2/open-search-cluster-conf.png)
 
 
 ## <a name="amazon-lambda-function"></a>Ingest real-time data into OpenSearch using AWS Lambda Functions
 
-You can index data into Amazon OpenSearch Service in real time using a Lambda function.
-In this lab, you will create a Lambda function using the AWS Lambda console.
+We can index data into Amazon OpenSearch Service in realtime using different ways, including, Kinesis injestion, using a Lambda function, or from any storage services
+For this architechture diagram, I will use the method of Lambda function since we will need to format raw data from the stream.
 
-![aws-analytics-system-build-steps](./assets/aws-analytics-system-build-steps.svg)
+![aws-analytics-system-build-steps](./Arch-diagram.png)
 
-### To add a common library to Layers for use by Lambda functions,
-1. Open the **AWS Lambda Console**.
-2. Enter the **Layers** menu and select **Create layer**.
-3. Enter `es-lib` for the Name.
-4. Select `Upload a file from Amazon S3` and enter the s3 link url where the library code is stored or the compressed library code file.
-For how to create `es-lib.zip`, refer to [Example of creating a Python package to register in AWS Lambda Layer](#aws-lambda-layer-python-packages).
-5. Select `Python 3.11` from `Compatible runtimes`.
-
-### To create a Lambda function,
-1. Open the **AWS Lambda Console**.
-2. Select **Create a function**.
-3. Enter `UpsertToES` for Function name.
-4. Select `Python 3.11` in Runtime.
-5. Select **Create a function**.
- ![aws-lambda-create-function](./assets/aws-lambda-create-function.png)
-6. In the Designer tab. choose **Add a layer** at Layers.
-7. Select `Custome Layers` in **Choose a Layer** section, and choose Name and Version of the previously created layer as Name and Version in **Custom layers**.
- ![aws-lambda-add-layer-to-function](./assets/aws-lambda-add-layer-to-function.png)
-8. Click **Add**.
-9. Select `UpsertToES` in the Designer tab to return to Function code and Configuration.
-10. Copy and paste the code from the `upsert_to_es.py` file into the code editor of the Function code. Click **Deploy**
-11. In Environment variables, click **Edit**.
-12. Click **Add environment variables** to register the following 4 environment variables.
+### Generate and add a library to Layers for use by the Lambda functions,
+1. Generate `es-lib` library as `.zip` and store it in S3
+  + From the CLI of `Bastion` EC2 instance, run the following command:
     ```shell script
-    ES_HOST=<opensearch service domain>
-    ES_INDEX=<opensearch index name>
-    ES_TYPE=<opensearch type name>
-    REQUIRED_FIELDS=<columns to be used as primary key>
-    REGION_NAME=<region-name>
-    DATE_TYPE_FIELDS=<columns of which data type is either date or timestamp>
+      $ python3 -m venv es-lib
+      $ cd es-lib
+      $ source bin/activate
+      (es-lib)$ mkdir -p python_modules
+      (es-lib)$ pip install 'elasticsearch < 7.14' requests requests-aws4auth -t python_modules
+      (es-lib)$ mv python_modules python
+      (es-lib)$ zip -r es-lib.zip python/
+      (es-lib)$ aws s3 mb s3://my-bucket-for-lambda-layer-packages
+      (es-lib)$ aws s3 cp es-lib.zip s3://my-bucket-for-lambda-layer-packages/python/
     ```
-    For example, set Environment variables as follows:
-    ```buildoutcfg
+  + Replace the S3 path to actual bucket path.
+2. From **AWS Lambda Console**, create a new layer called `es-lib`
+  + Select `Upload a file from Amazon S3` and enter the s3 path of `es-lib.zip` file created earlier
+  + Use `Python 3.11` as `Compatible runtimes`.
+
+### Create a Lambda function to format data from the stream and injest it to OpenSearch Service
+1. From **AWS Lambda Console**, **Create a function** called `UpsertToES`.
+  + Select `Python 3.11` in Runtime.
+2. In the Designer tab. **Add a layer** and choose the `es-lib` as **Custom Layers**
+3. Select `UpsertToES` in the Designer tab to return to Function code and Configuration.
+4. Copy and paste the code from the `upsert_to_es.py` [file](./upsert_to_es.py) and **Deploy**.
+5. Add necessary environment variables to register. Replace variables as needed </br>
+  ```shell script
     ES_HOST=vpc-retail-xkl5jpog76d5abzhg4kyfilymq.us-west-1.es.amazonaws.com
     ES_INDEX=retail
     ES_TYPE=trans
     REQUIRED_FIELDS=Invoice,StockCode,Customer_ID
     REGION_NAME=us-west-2
     DATE_TYPE_FIELDS=InvoiceDate
-    ```
-13. Click **Save**.
-14. In order to execute the lambda function in the VPC and read data from Kinesis Data Streams, you need to add the IAM Policy required for the Execution role required to execute the lamba function.
-Click `View the UpsertToES-role-XXXXXXXX role on the IAM console.` to edit the IAM Role.
- ![aws-lambda-execution-iam-role](./assets/aws-lambda-execution-iam-role.png)
-15. After clicking the **Attach policies** button in the **Permissions** tab of IAM Role, add **AWSLambdaVPCAccessExecutionRole** and **AmazonKinesisReadOnlyAccess** in order.
- ![aws-lambda-iam-role-policies](./assets/aws-lambda-iam-role-policies.png)
-16. Add the following policy statements into customer inline policy (e.g., `UpsertToESDefaultPolicyXXXXX`). The following IAM Policy enables the lambda function to ingest data into the `retail` index in the opensearch service.
+  ```
+6. In order to execute the lambda function in the VPC and read data from Kinesis Data Streams, add the IAM Policy required for the Execution role required to execute the lamba function.
+7. Modify the execution role of the function and Attach policies: **AWSLambdaVPCAccessExecutionRole** and **AmazonKinesisReadOnlyAccess** in order.
+ ![aws-lambda-iam-role-policies](./part2/labmda-opensearch-role-perm.png)
+8. Add a inline policy statements to enables the lambda function to ingest data into the `salesv1` index in the opensearch service.
     <pre>
     {
         "Action": [
@@ -341,183 +330,77 @@ Click `View the UpsertToES-role-XXXXXXXX role on the IAM console.` to edit the I
             "es:ESHttpPut"
         ],
         "Resource": [
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail",
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail/*"
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1",
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1/*"
         ],
         "Effect": "Allow"
     },
     {
         "Action": "es:ESHttpGet",
         "Resource": [
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail",
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail/_all/_settings",
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail/_cluster/stats",
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail/_nodes",
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail/_nodes/*/stats",
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail/_nodes/stats",
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail/_stats",
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail/retail*/_mapping/trans",
-            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/retail/retail*/_stats"
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1",
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1/_all/_settings",
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1/_cluster/stats",
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1/_nodes",
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1/_nodes/*/stats",
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1/_nodes/stats",
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1/_stats",
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1/retail*/_mapping/trans",
+            "arn:aws:es:<i>region</i>:<i>account-id</i>:domain/salesv1/retail*/_stats"
         ],
         "Effect": "Allow"
     }
     </pre>
-17. Click the **Edit** button in the VPC category to go to the Edit VPC screen. Select `Custom VPC` for VPC connection.
-Choose the VPC and subnets where you created the domain for the OpenSearch service, and choose the security groups that are allowed access to the OpenSearch service domain.
-18. Select **Edit** in Basic settings. Adjust Memory and Timeout appropriately. In this lab, we set Timout to `5 min`.
-19. Go back to the Designer tab and select **Add trigger**.
-20. Select **Kinesis** from `Select a trigger` in the **Trigger configuration**.
-21. Select the Kinesis Data Stream (`retail-trans`) created earlier in **Kinesis stream**.
-22. Click **Add**.
- ![aws-lambda-kinesis](./assets/aws-lambda-kinesis.png)
+9. **Edit** the VPC of the function and select a `Custom VPC` for VPC connection.
+Use the same VPC and subnets where the domain for the OpenSearch service is created, and choose the security groups that are allowed access to the OpenSearch service domain, in this case, `use-es-cluster-sg`
+10. Select **Edit** in Basic settings. Adjust Memory and Timeout appropriately. In this lab, we set Timout to `5 min`.
+11. **Add trigger** and pick **Kinesis** as a trigger.
+12. Select the Kinesis Data Stream (`retail-trans`) created earlier in **Kinesis stream**.
+Overall `UpsertToES` Function should look like this:
+ ![aws-lambda-kinesis](./part2/lambda-f-overview.png)
 
 ### <a name="create-firehose-role"></a>Enable the Lambda function to ingest records into Amazon OpenSearch
 
- The lambda function uses the delivery role to sign HTTP (Signature Version 4) requests before sending the data to the Amazon OpenSearch Service endpoint.
+The lambda function uses the delivery role to sign HTTP (Signature Version 4) requests before sending the data to the Amazon OpenSearch Service endpoint. This section describes how to create roles and set permissions for the lambda function. </br>
+The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSearch endpoint and the Kibana endpoint are not available over the internet. In order to access the endpoints, we have to create a ssh tunnel and do local port forwarding. <br/>
 
- You manage Amazon OpenSearch Service fine-grained access control permissions using roles, users, and mappings.
- This section describes how to create roles and set permissions for the lambda function.
+1. Using SSH Tunneling via CLI command from a local PC. This tunnel will connect to the `Bastion` host then do port forwarding to the OpenSearch service domain.</br>
+  ```shell script
+    ssh -i ~/.ssh/<key.pem> ec2-user@<ip-of-bastion> -N -L 9200:<VPC-enpoint-of-domain>:443
+  ```
+  Replace`<ip-of-bastion>` and `<VPC-enpoint-of-domain>` as neccesary, `<key.pem>` is used to access the `Bastion` and is stored in the  directory of `~/.ssh/`.Onced opened, the tunnel will run indefinitely, use **Ctrl+C** to disrupt it.
+2. Access open search service via `https://localhost:9200/_dashboards/app/login?` in a web browser.
+3. Enter the master `username` and `password` for Amazon OpenSearch Service endpoint.
+4. From the dashboaRd, configure **Security** in the toolbar.
+5. Under **Security**, create a new role called `firehose_role`.
+    + For cluster permissions, add `cluster_composite_ops` and `cluster_monitor`.
+    + Under **Index permissions**, choose **Index Patterns** and enter <i>index-name*</i>; for example, `retail*`.
+    + Under **Permissions**, add three action groups: `crud`, `create_index`, and `manage`.
+  ![ops-create-firehose_role](./part2/filehose-role.png)
 
- Complete the following steps:
-
-1. The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSearch endpoint and the Kibana endpoint are not available over the internet. In order to access the endpoints, we have to create a ssh tunnel and do local port forwarding. <br/>
-   * Option 1) Using SSH Tunneling
-
-      1. Setup ssh configuration
-
-         For Winodws, refer to [here](#SSH-Tunnel-with-PuTTy-on-Windows).</br>
-         For Mac/Linux, to access the OpenSearch Cluster, add the ssh tunnel configuration to the ssh config file of the personal local PC as follows.<br/>
-            ```shell script
-            # OpenSearch Tunnel
-            Host estunnel
-              HostName <EC2 Public IP of Bastion Host>
-              User ec2-user
-              IdentitiesOnly yes
-              IdentityFile ~/.ssh/analytics-hol.pem
-              LocalForward 9200 <OpenSearch Endpoint>:443
-            ```
-           + **EC2 Public IP of Bastion Host** uses the public IP of the EC2 instance created in the **Lab setup** step.
-           + ex)
-            ```shell script
-            ~$ ls -1 .ssh/
-            analytics-hol.pem
-            config
-            id_rsa
-            ~$ tail .ssh/config
-            # OpenSearch Tunnel
-            Host estunnel
-              HostName 214.132.71.219
-              User ubuntu
-              IdentitiesOnly yes
-              IdentityFile ~/.ssh/analytics-hol.pem
-              LocalForward 9200 vpc-retail-qvwlxanar255vswqna37p2l2cy.us-west-2.es.amazonaws.com:443
-            ~$
-            ```
-      2. Run `ssh -N estunnel` in Terminal.
-
-   * Option 2) Connect using the EC2 Instance Connect CLI
-
-      1. Install EC2 Instance Connect CLI
-          ```
-          sudo pip install ec2instanceconnectcli
-          ```
-      2. Run
-          <pre>mssh ec2-user@{<i>bastion-ec2-instance-id</i>} -N -L 9200:{<i>opensearch-endpoint</i>}:443</pre>
-        + ex)
-          ```
-          $ mssh ec2-user@i-0203f0d6f37ccbe5b -N -L 9200:vpc-retail-qvwlxanar255vswqna37p2l2cy.us-west-2.es.amazonaws.com:443
-          ```
-
-2. Connect to `https://localhost:9200/_dashboards/app/login?` in a web browser.
-3. Enter the master user and password that you set up when you created the Amazon OpenSearch Service endpoint. The user and password are stored in the [AWS Secrets Manager](https://console.aws.amazon.com/secretsmanager/listsecrets) as a name such as `OpenSearchMasterUserSecret1-xxxxxxxxxxxx`.
-4. In the Welcome screen, click the toolbar icon to the left side of **Home** button. Choose **Security**.
-   ![ops-dashboards-sidebar-menu-security](./assets/ops-dashboards-sidebar-menu-security.png)
-5. Under **Security**, choose **Roles**.
-6. Choose **Create role**.
-7. Name your role; for example, `firehose_role`.
-8. For cluster permissions, add `cluster_composite_ops` and `cluster_monitor`.
-9.  Under **Index permissions**, choose **Index Patterns** and enter <i>index-name*</i>; for example, `retail*`.
-10. Under **Permissions**, add three action groups: `crud`, `create_index`, and `manage`.
-11. Choose **Create**.
-    ![ops-create-firehose_role](./assets/ops-create-firehose_role.png)
-
-In the next step, you map the IAM role that the lambda function uses to the role you just created.
-
-12. Choose the **Mapped users** tab.
-    ![ops-role-mappings](./assets/ops-role-mappings.png)
-13. Choose **Manage mapping** and under **Backend roles**,
-14. For **Backend Roles**, enter the IAM ARN of the role the lambda function uses:
+Next, map the execution IAM role of `UpsertToES`function to the `filehose-role`
+6. Under **Mapped users** tab
+    + Choose **Manage mapping** and under **Backend roles**,
+    + For **Backend Roles**, enter the IAM role ARN of `UpsertToES:
     `arn:aws:iam::123456789012:role/UpsertToESServiceRole709-xxxxxxxxxxxx`.
-    ![ops-entries-for-firehose_role](./assets/ops-entries-for-firehose_role.png)
-15. Choose **Map**.
 
-**Note**: After OpenSearch Role mapping for the lambda function, you would not be supposed to meet a data delivery failure with the lambda function like this:
-
-<pre>
-[ERROR] AuthorizationException: AuthorizationException(403, 'security_exception', 'no permissions for [cluster:monitor/main] and User [name=arn:aws:iam::123456789012:role/UpsertToESServiceRole709-G1RQVRG80CQY, backend_roles=[arn:aws:iam::123456789012:role/UpsertToESServiceRole709-G1RQVRG80CQY], requestedTenant=null]')
-</pre>
-
-\[[Top](#top)\]
 
 ## <a name="amazon-es-kibana-visualization"></a>Data visualization with Kibana
 
 Visualize data collected from Amazon OpenSearch Service using Kibana.
 
-![aws-analytics-system-build-steps](./assets/aws-analytics-system-build-steps.svg)
+![aws-analytics-system-build-steps](./Arch-diagram.png)
 
-1. The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSearch endpoint and the Kibana endpoint are not available over the internet. In order to access the endpoints, we have to create a ssh tunnel and do local port forwarding. <br/>
-   * Option 1) Using SSH Tunneling
+The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSearch endpoint and the Kibana endpoint are not available over the internet. In order to access the endpoints, we have to create a ssh tunnel and do local port forwarding. <br/>
 
-      1. Setup ssh configuration
-
-         For Winodws, refer to [here](#SSH-Tunnel-with-PuTTy-on-Windows).</br>
-         For Mac/Linux, to access the OpenSearch Cluster, add the ssh tunnel configuration to the ssh config file of the personal local PC as follows.<br/>
-            ```shell script
-            # OpenSearch Tunnel
-            Host estunnel
-              HostName <EC2 Public IP of Bastion Host>
-              User ec2-user
-              IdentitiesOnly yes
-              IdentityFile ~/.ssh/analytics-hol.pem
-              LocalForward 9200 <OpenSearch Endpoint>:443
-            ```
-           + **EC2 Public IP of Bastion Host** uses the public IP of the EC2 instance created in the **Lab setup** step.
-           + ex)
-            ```shell script
-            ~$ ls -1 .ssh/
-            analytics-hol.pem
-            config
-            id_rsa
-            ~$ tail .ssh/config
-            # OpenSearch Tunnel
-            Host estunnel
-              HostName 214.132.71.219
-              User ubuntu
-              IdentitiesOnly yes
-              IdentityFile ~/.ssh/analytics-hol.pem
-              LocalForward 9200 vpc-retail-qvwlxanar255vswqna37p2l2cy.us-west-2.es.amazonaws.com:443
-            ~$
-            ```
-      2. Run `ssh -N estunnel` in Terminal.
-
-   * Option 2) Connect using the EC2 Instance Connect CLI
-
-      1. Install EC2 Instance Connect CLI
-          ```
-          sudo pip install ec2instanceconnectcli
-          ```
-      2. Run
-          <pre>mssh ec2-user@{<i>bastion-ec2-instance-id</i>} -N -L 9200:{<i>opensearch-endpoint</i>}:443</pre>
-        + ex)
-          ```
-          $ mssh ec2-user@i-0203f0d6f37ccbe5b -N -L 9200:vpc-retail-qvwlxanar255vswqna37p2l2cy.us-west-2.es.amazonaws.com:443
-          ```
-
-2. Connect to `https://localhost:9200/_dashboards/app/login?` in a web browser.
-3. Enter the master user and password that you set up when you created the Amazon OpenSearch Service endpoint. The user name and password of the master user are stored in the [AWS Secrets Manager](https://console.aws.amazon.com/secretsmanager/listsecrets) as a name such as `OpenSearchMasterUserSecret1-xxxxxxxxxxxx`.
-4. In the Welcome screen, click the toolbar icon to the left side of **Home** button. Choose **Stack Managerment**.
-   ![ops-dashboards-sidebar-menu](./assets/ops-dashboards-sidebar-menu.png)
-5. (Management / Create index pattern) In **Step 1 of 2: Define index pattern** of **Create index pattern**, enter `retail*` in Index pattern.
+1. Using SSH Tunneling via CLI command from a local PC. This tunnel will connect to the `Bastion` host then do port forwarding to the OpenSearch service domain.</br>
+  ```shell script
+    ssh -i ~/.ssh/<key.pem> ec2-user@<ip-of-bastion> -N -L 9200:<VPC-enpoint-of-domain>:443
+  ```
+  Replace`<ip-of-bastion>` and `<VPC-enpoint-of-domain>` as neccesary, `<key.pem>` is used to access the `Bastion` and is stored in the  directory of `~/.ssh/`.Onced opened, the tunnel will run indefinitely, use **Ctrl+C** to disrupt it.
+2. Access open search service via `https://localhost:9200/_dashboards/app/login?` in a web browser.
+3. Enter the master `username` and `password` for Amazon OpenSearch Service endpoint.
+5. From the left toolbar, (Management / Create index pattern)  **Create index pattern**, enter `retail*` in Index pattern.
    ![ops-create-index-pattern](./assets/ops-create-index-pattern.png)
 6. (Management / Create index pattern) Choose **> Next step**.
 7. (Management / Create index pattern) Select `InvoiceDate` for the **Time Filter field name** in **Step 2 of 2: Configure settings** of the Create index pattern.
