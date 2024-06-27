@@ -397,13 +397,12 @@ The Amazon OpenSearch cluster is provisioned in a VPC. Hence, the Amazon OpenSea
   ```shell script
     ssh -i ~/.ssh/<key.pem> ec2-user@<ip-of-bastion> -N -L 9200:<VPC-enpoint-of-domain>:443
   ```
-  
-  Replace`<ip-of-bastion>` and `<VPC-enpoint-of-domain>` as neccesary, `<key.pem>` is used to access the `Bastion` and is stored in the  directory of `~/.ssh/`.Onced opened, the tunnel will run indefinitely, use **Ctrl+C** to disrupt it.
-2. Access open search service via `https://localhost:9200/_dashboards/app/login?` in a web browser.
-3. Enter the master `username` and `password` for Amazon OpenSearch Service endpoint.
+  Replace`<ip-of-bastion>` and `<VPC-enpoint-of-domain>` as neccesary, `<key.pem>` is used to access the `Bastion` and is stored in the  directory of `~/.ssh/`.Onced opened, the tunnel will run indefinitely, use **Ctrl+C** to disrupt it. </br>
+2. Access open search service via `https://localhost:9200/_dashboards/app/login?` in a web browser. </br>
+3. Enter the master `username` and `password` for Amazon OpenSearch Service endpoint.</br>
 5. From the left toolbar, (Management / Create index pattern)  **Create index pattern**, enter `retail*` in Index pattern.
    ![ops-create-index-pattern](./assets/ops-create-index-pattern.png)
-6. (Management / Create index pattern) Choose **> Next step**.
+6. (Management / Create index pattern) Choose **Next step**.
 7. (Management / Create index pattern) Select `InvoiceDate` for the **Time Filter field name** in **Step 2 of 2: Configure settings** of the Create index pattern.
    ![ops-create-index-pattern-configure-setting](./assets/ops-create-index-pattern-configure-setting.png)
 8. (Management / Create index pattern) Click **Create index pattern**.
