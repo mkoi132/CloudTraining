@@ -17,10 +17,9 @@ This lab will set up a `Data Collection -> Store -> Analysis/Processing -> Visua
 * [\[Step-2a\] Create Amazon OpenSearch Service for Real-Time Data Analysis](#amazon-es)
 * [\[Step-2b\] Ingest real-time data into OpenSearch using AWS Lambda Functions](#amazon-lambda-function)
 * [\[Step-2c\] Data visualization with Kibana](#amazon-es-kibana-visualization)
-* [Recap and Review](#recap-and-review)
-* [Resources](#resources)
+* [Recap](#recap-and-review)
 * [Reference](#reference)
-* [Deployment by AWS CDK](#deployment-by-aws-cdk)
+
 
 ## <a name="solutions-architecture-overview"></a>Solutions Architecture Overview
 ![aws-analytics-system-architecture](./Arch-diagram.png)
@@ -440,7 +439,6 @@ Through this lab, we have built a Business Intelligent System with Lambda Archit
 + [Amazon QuickSight](https://docs.aws.amazon.com/quicksight/latest/user/welcome.html)
 + [AWS Lambda Layers](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html#configuration-layers-path)
     + [How to create a Lambda layer using a simulated Lambda environment with Docker](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-layer-simulated-docker/)
-### <a name="SSH-Tunnel-with-PuTTy-on-Windows"></a>SSH Tunnel for Kibana Instructions with PuTTy on Windows
 + [Windows SSH / Tunnel for Kibana Instructions - Amazon Elasticsearch Service](https://search-sa-log-solutions.s3-us-east-2.amazonaws.com/logstash/docs/Kibana_Proxy_SSH_Tunneling_Windows.pdf)
 + [Use an SSH Tunnel to access Kibana within an AWS VPC with PuTTy on Windows](https://amazonmsk-labs.workshop.aws/en/mskkdaflinklab/createesdashboard.html)
 + [Connect using the EC2 Instance Connect CLI](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html#ec2-instance-connect-connecting-ec2-cli)
