@@ -96,4 +96,4 @@ Enter the IAM user credentials for the `Access key ID` and `Secret access key`.
        Default region name [None]: us-east-2
        Default output format [None]:
     ```
-[Continue](./README.md)
+[Continue](./README.md):fast_forward:
