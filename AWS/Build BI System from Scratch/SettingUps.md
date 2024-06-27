@@ -47,7 +47,6 @@ Rules as follow:
 ## <a name="ec2-launch"></a>Launch an EC2 Instance
 Create an EC2 instance that will generate the data needed for the lab in real time.
 This instance is created in public subnet of one AZ for simplicity and advoid unecessary charges.
-
 1. Connect to EC2 service in AWS Management Console.
 2. In the upper right, select your region (e.g., **Ohio**).
 3. Select **Instances** from the left **INSTANCES** menu and click **\[Launch Instance\]** to start creating a new instance.
