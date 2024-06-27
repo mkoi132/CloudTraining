@@ -96,4 +96,4 @@ Enter the IAM user credentials for the `Access key ID` and `Secret access key`.
        Default region name [None]: us-east-2
        Default output format [None]:
     ```
-[Continue:fast_forward:](./README.md#create-kinesis-data-streams-to-receive-real-time-input-data)
+[Continue :fast_forward:](./README.md#create-kinesis-data-streams-to-receive-real-time-input-data)
