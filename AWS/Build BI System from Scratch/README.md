@@ -7,7 +7,7 @@ This lab will set up a `Data Collection -> Store -> Analysis/Processing -> Visua
 
 ## Table of Contents
 * [Solutions Architecture Overview](#solutions-architecture-overview)
-* [Lab setup](#settingups)
+* [Setting up the environment](#settingups)
 * [\[Step-1a\] Create Kinesis Data Streams to receive input data](#kinesis-data-streams)
 * [\[Step-1b\] Create Kinesis Data Firehose to store data in S3](#kinesis-data-firehose)
 * [\[Step-1c\] Verify data pipeline operation](#kinesis-data-pipeline)
